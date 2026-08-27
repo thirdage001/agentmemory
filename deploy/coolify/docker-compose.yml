@@ -10,6 +10,8 @@ services:
     restart: unless-stopped
     environment:
       SERVICE_FQDN_AGENTMEMORY_3111: ${SERVICE_FQDN_AGENTMEMORY_3111}
+      AGENTMEMORY_VIEWER_HOST: "0.0.0.0"
+      VIEWER_ALLOWED_HOSTS: "localhost:3113,127.0.0.1:3113,[::1]:3113"
     expose:
       - "3111"
     ports:
