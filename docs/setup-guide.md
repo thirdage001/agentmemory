@@ -10,6 +10,7 @@ This setup gives you:
 - **Automatic session observation** - every prompt, tool call, file edit, and agent response is recorded
 - **Memory recall** via MCP tools (`memory_recall`, `memory_smart_search`, etc.)
 - **Automatic memory search** at the start of every new conversation via a global rule
+- **Proactive memory saving** — the agent saves important learnings (architecture decisions, bugs, patterns, preferences, workflows) automatically via the global rule
 
 ## Architecture
 
@@ -410,9 +411,9 @@ Edit `~/.config/devin/mcp_config.json` with the same structure.
 
 ---
 
-## Step 6: Configure the global rule for automatic memory search
+## Step 6: Configure the global rule for automatic memory search and saving
 
-This rule instructs the agent to automatically search memory at the start of every conversation.
+This rule instructs the agent to automatically search memory at the start of every conversation AND to proactively save important learnings throughout the session.
 
 Save as `~/.codeium/windsurf/memories/global_rules.md`:
 
@@ -426,6 +427,26 @@ At the start of every new conversation, before responding to the user's first pr
 When working on files that have been modified in previous sessions, call `memory_file_history` with the relevant file paths to understand past changes before making new edits.
 
 When the user asks about decisions, patterns, or past work, use `memory_recall` or `memory_smart_search` to find relevant past observations.
+
+### Proactive Memory Saving
+
+You MUST proactively save important learnings to memory using `memory_save` — do not wait to be asked. Save a memory whenever any of the following occurs:
+
+- **Architecture decision made**: what was decided, why, and the alternatives considered (type: `architecture`)
+- **Bug discovered and fixed**: root cause, fix, and how to prevent recurrence (type: `bug`)
+- **Reusable pattern identified**: a code pattern or workflow that will be useful in future sessions (type: `pattern`)
+- **User preference learned**: how the user likes things done (type: `preference`)
+- **Workflow or process established**: a repeatable procedure for a recurring task (type: `workflow`)
+- **Important fact learned**: something non-obvious about the codebase, infrastructure, or tooling (type: `fact`)
+
+When saving, include:
+- `content`: a concise but complete description (1-3 sentences)
+- `type`: one of the types above
+- `concepts`: comma-separated key terms for searchability
+- `files`: comma-separated relevant file paths (when applicable)
+- `project`: the current project identifier when applicable
+
+Do not save trivial observations (tool outputs, file reads, routine edits) — the hooks capture those automatically. Only save insights that would be valuable in a future session.
 ```
 
 ---
@@ -455,7 +476,7 @@ You should see a new session with observations.
 |---|---|---|
 | `~/.agentmemory/scripts/cascade-bridge.mjs` | Bridge script (Cascade → agentmemory) | User-level |
 | `~/.codeium/windsurf/hooks.json` | Cascade hooks configuration | User-level, all projects |
-| `~/.codeium/windsurf/memories/global_rules.md` | Global rule for auto memory search | User-level, all projects |
+| `~/.codeium/windsurf/memories/global_rules.md` | Global rule for auto memory search + proactive saving | User-level, all projects |
 | `%APPDATA%\devin\mcp_config.json` (Win) / `~/.config/devin/mcp_config.json` (Unix) | MCP server config | User-level |
 | Environment vars `AGENTMEMORY_URL`, `AGENTMEMORY_SECRET` | Server connection | User-level |
 
