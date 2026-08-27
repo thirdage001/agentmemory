@@ -516,7 +516,7 @@ The viewer port (`3113`) is intentionally not exposed publicly. It binds to `127
 4. **Redeploy** the application
 5. **Access via SSH tunnel:**
    ```bash
-   ssh -L 3113:127.0.0.1:3113 <user>@<coolify-host>
+   ssh -L 3113:127.0.0.1:3113 root@185.207.250.150
    ```
 6. **Open in browser:** `http://localhost:3113`
 
