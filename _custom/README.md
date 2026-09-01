@@ -16,6 +16,7 @@ agentmemory-workspace/
     │
     ├── docs/                              ← selbst angelegte Doku
     │   ├── setup-guide.md                 — vollständiger Setup-Guide (Coolify, Hooks, MCP, Rules, Shared-Memory)
+    │   ├── coolify-deployment.md          — reale Coolify-Produktionskonfiguration (Server, App, Env, Storage, Secrets)
     │   └── create-memory.md               — Memory-Erstellungs-Doku
     │
     ├── rules/
@@ -87,6 +88,7 @@ cd custom
 | Datei | Ursprung |
 |---|---|
 | `docs/setup-guide.md`, `docs/create-memory.md` | Selbst auf Fork (thirdage001/agentmemory) erstellt, aus repo/docs/ ausgelagert |
+| `docs/coolify-deployment.md` | Neu erstellt — reale Coolify-Konfiguration via Coolify MCP ausgelesen (Server/App/Env/Storage, Secrets als Platzhalter) |
 | `rules/shared-memory.md` | Neu erstellt in dieser Session (Phase 1 Shared-Memory-Policy) |
 | `agent-rules/CLAUDE.md` | Neu erstellt (Claude Code Rule mit @import) |
 | `agent-rules/global_rules.md` | Bestehend, um Shared-Memory-Section erweitert |
