@@ -5,6 +5,11 @@ vi.mock("../src/logger.js", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
+const graphEnabledMock = vi.fn(() => false);
+vi.mock("../src/config.js", () => ({
+  isGraphExtractionEnabled: () => graphEnabledMock(),
+}));
+
 function mockKV(
   nodes: GraphNode[] = [],
   edges: GraphEdge[] = [],
@@ -371,5 +376,87 @@ describe("TemporalGraph", () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe("No observations provided");
+  });
+
+  it("mem::graph-extract skips when GRAPH_EXTRACTION_ENABLED is not set", async () => {
+    const { registerTemporalGraphFunctions } = await import(
+      "../src/functions/temporal-graph.js"
+    );
+    graphEnabledMock.mockReturnValue(false);
+    const sdk = mockSdk();
+    const kv = mockKV();
+    const provider: MemoryProvider = {
+      name: "test",
+      compress: vi.fn(),
+      summarize: vi.fn(),
+    };
+    registerTemporalGraphFunctions(sdk as never, kv as never, provider);
+
+    const result = (await sdk.trigger("mem::graph-extract", {
+      observations: [
+        {
+          id: "obs_1",
+          title: "test",
+          narrative: "test",
+          concepts: [],
+          files: [],
+          type: "conversation",
+          timestamp: "2024-01-01T00:00:00Z",
+        },
+      ],
+    })) as any;
+
+    expect(result.success).toBe(false);
+    expect(result.skipped).toBe(true);
+    expect(result.reason).toContain("GRAPH_EXTRACTION_ENABLED");
+    expect(provider.compress).not.toHaveBeenCalled();
+  });
+
+  it("mem::graph-extract delegates to mem::temporal-graph-extract when enabled", async () => {
+    const { registerTemporalGraphFunctions } = await import(
+      "../src/functions/temporal-graph.js"
+    );
+    graphEnabledMock.mockReturnValue(true);
+    const response = `<temporal_graph>
+  <entities>
+    <entity type="concept" name="testing">
+      <property key="area">unit-test</property>
+    </entity>
+  </entities>
+  <relationships>
+  </relationships>
+</temporal_graph>`;
+    const provider: MemoryProvider = {
+      name: "test",
+      compress: vi.fn().mockResolvedValue(response),
+      summarize: vi.fn().mockResolvedValue(response),
+    };
+    const sdk = mockSdk();
+    const kv = mockKV();
+    registerTemporalGraphFunctions(sdk as never, kv as never, provider);
+
+    const result = (await sdk.trigger("mem::graph-extract", {
+      observations: [
+        {
+          id: "obs_1",
+          title: "test concept",
+          narrative: "testing is important",
+          concepts: ["testing"],
+          files: [],
+          type: "conversation",
+          timestamp: "2024-01-01T00:00:00Z",
+        },
+      ],
+    })) as any;
+
+    expect(result.success).toBe(true);
+    expect(result.nodesAdded).toBe(1);
+    expect(provider.compress).toHaveBeenCalledOnce();
+
+    const storedNodes = await kv.list<GraphNode>("mem:graph:nodes");
+    expect(storedNodes.length).toBe(1);
+    expect(storedNodes[0].type).toBe("concept");
+
+    graphEnabledMock.mockReturnValue(false);
   });
 });

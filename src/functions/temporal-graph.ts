@@ -10,6 +10,7 @@ import type {
 import { KV, generateId } from "../state/schema.js";
 import type { StateKV } from "../state/kv.js";
 import { logger } from "../logger.js";
+import { isGraphExtractionEnabled } from "../config.js";
 
 const TEMPORAL_EXTRACTION_SYSTEM = `You are a temporal knowledge extraction engine. Given observations, extract entities AND their temporal relationships with full context metadata.
 
@@ -271,6 +272,28 @@ export function registerTemporalGraphFunctions(
         logger.error("Temporal graph extraction failed", { error: msg });
         return { success: false, error: msg };
       }
+    },
+  );
+
+  sdk.registerFunction("mem::graph-extract",
+    async (data: {
+      observations: Array<{
+        id: string;
+        title: string;
+        narrative: string;
+        concepts: string[];
+        files: string[];
+        type: string;
+        timestamp: string;
+      }>;
+    }) => {
+      if (!isGraphExtractionEnabled()) {
+        return { success: false, skipped: true, reason: "Graph extraction disabled: set GRAPH_EXTRACTION_ENABLED=true" };
+      }
+      return sdk.trigger({
+        function_id: "mem::temporal-graph-extract",
+        payload: data,
+      });
     },
   );
 

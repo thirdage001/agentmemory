@@ -28,6 +28,16 @@ When saving, include:
 
 Do not save trivial observations (tool outputs, file reads, routine edits) — the hooks capture those automatically. Only save insights that would be valuable in a future session.
 
+## Action Lifecycle (Voraussetzung fuer Lessons)
+
+Lessons werden nicht aus Memories generiert, sondern aus **Actions** (Status `done`) ueber den Crystallize-Pipeline. Ohne Actions keine Crystals, ohne Crystals keine Lessons. Du MUSS Actions pflegen:
+
+- **Action anlegen** mit `memory_action_create`, sobald eine konkrete Arbeitsaufgabe klar ist — vor Beginn der eigentlichen Arbeit. Parameter: `title` (Pflicht), `description`, `project` (aktuelles Projekt), `tags` (Komma-separiert), `createdBy` (dein Agent-Name).
+- **Action auf `done` setzen** mit `memory_action_update` (`actionId`, `status: "done"`, `result: "<kurze Zusammenfassung>"`), sobald die Aufgabe abgeschlossen ist.
+- **Nicht anlegen** fuer: kurze Recherchen, einzelne Tool-Aufrufe, Lese-Operationen, Beantwortung von Fragen. Nur fuer Aufgaben mit klarem Anfang, Umfang und Abschluss — ein Bug-Fix, ein Feature, eine Refaktorierung, eine laengere Untersuchung.
+- **Abbrechen** mit `status: "cancelled"`, wenn die Aufgabe verworfen wird — auch das macht sie fuer Crystallize verfuegbar.
+- Bei mehreren zusammenhaengenden Aufgaben: Parent-Action anlegen, Child-Actions mit `parentId` verknuepfen. `auto-crystallize` gruppiert nach `parentId`/`project`.
+
 ## Shared Memory Policy (Scope-Hierarchie)
 
 Vollstaendige kanonische Policy: `C:\Users\anand\.agentmemory\rules\shared-memory.md`.
